@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Registration{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/registration/register.css' %}">
+<div class="group">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="text-center mb-4">Registration</h2>
+                <form method="post" class="form-group">
+                    {% csrf_token %}
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="col-md-4 control-label text-right">Username:</label>
+                        <div class="col-md-6">
+                            {{ form.username }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="col-md-4 control-label text-right">Email:</label>
+                        <div class="col-md-6">
+                            {{ form.email }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.password1.id_for_label }}" class="col-md-4 control-label text-right">Password:</label>
+                        <div class="col-md-6">
+                            {{ form.password1 }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.password2.id_for_label }}" class="col-md-4 control-label text-right">Confirm Password:</label>
+                        <div class="col-md-6">
+                            {{ form.password2 }}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">Register</button>
+                </form>
+                <p class="text-center mt-3">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

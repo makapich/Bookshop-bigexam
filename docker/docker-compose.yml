@@ -1,0 +1,171 @@
+version: '3'
+services:
+  shop:
+    container_name: shop
+    build:
+      context: ..
+      dockerfile: docker/shop/Dockerfile
+    networks:
+      - shop_store_network
+      - shop_network
+      - nginx_network
+    ports:
+      - 8000:8000
+    volumes:
+      - ../backend/shop:/app
+    depends_on:
+      - db_shop
+      - redis
+      - celery
+    restart: on-failure
+    environment:
+      DB_NAME: "shop"
+      DB_USER: "postgres"
+      DB_PASSWORD: "postgres"
+      DB_HOST: "db_shop"
+      DB_PORT: "5432"
+
+  db_shop:
+    container_name: db_shop
+    image: postgres
+    ports:
+      - 5433:5432
+    networks:
+      - shop_network
+    expose:
+      - 5432
+    volumes:
+      - db_shop_volume:/var/lib/postgresql/data
+    restart: on-failure
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_DB: 'shop'
+
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - 6379:6379
+    networks:
+      - shop_network
+    restart: on-failure
+
+  celery:
+    container_name: celery
+    build:
+      context: ..
+      dockerfile: docker/shop/celery/Dockerfile
+    networks:
+      - shop_store_network
+      - shop_network
+      - mailhog_network
+    ports:
+      - 8002:8000
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    environment:
+      CELERY_BROKER_URL: "amqp://rabbitmq"
+      CELERY_RESULT_BACKEND: "redis://redis:6379"
+      DB_NAME: "shop"
+      DB_USER: "postgres"
+      DB_PASSWORD: "postgres"
+      DB_HOST: "db_shop"
+      DB_PORT: "5432"
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - shop_network
+    depends_on:
+      - redis
+    restart: on-failure
+
+  store:
+    container_name: store
+    build:
+      context: ..
+      dockerfile: docker/store/Dockerfile
+    networks:
+      - shop_store_network
+      - store_network
+      - mailhog_network
+      - nginx_network
+    ports:
+      - 8001:8001
+    volumes:
+      - ../backend/store:/app
+    depends_on:
+      - db_store
+    restart: on-failure
+    environment:
+      DB_NAME: "store"
+      DB_USER: "postgres"
+      DB_PASSWORD: "postgres"
+      DB_HOST: "db_store"
+      DB_PORT: "5432"
+
+  db_store:
+    container_name: db_store
+    image: postgres
+    ports:
+      - 5432:5432
+    networks:
+      - store_network
+    expose:
+      - 5432
+    volumes:
+      - db_store_volume:/var/lib/postgresql/data
+    restart: on-failure
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_DB: 'store'
+
+  smtp-server:
+    container_name: smtp-server
+    image: mailhog/mailhog
+    expose:
+      - 1025
+      - 8025
+    ports:
+      - 1025:1025
+      - 8025:8025
+    networks:
+      - mailhog_network
+      - nginx_network
+    depends_on:
+      - celery
+
+  nginx:
+    container_name: nginx
+    build:
+      context: ..
+      dockerfile: docker/nginx/Dockerfile
+    networks:
+      - nginx_network
+    ports:
+      - 8080:8000
+      - 8081:8001
+      - 8082:8025
+    depends_on:
+      - shop
+      - store
+      - smtp-server
+    restart: on-failure
+
+networks:
+  shop_network:
+  store_network:
+  shop_store_network:
+  mailhog_network:
+  nginx_network:
+
+volumes:
+  db_shop_volume:
+  db_store_volume:

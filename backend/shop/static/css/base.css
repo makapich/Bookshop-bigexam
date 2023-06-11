@@ -1,0 +1,45 @@
+.navbar-brand img {
+width: auto;
+height: 40px;
+}
+
+#cart-detail {
+width: auto;
+height: 20px;
+}
+
+.navbar-brand, .collapse {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+#all-content {
+min-height: 100vh;
+margin-bottom: 100px;
+}
+
+footer {
+position: relative;
+bottom: 0;
+height: 70px;
+background-color: #343a40;
+color: white;
+}
+
+#footer-copyright-text-sim-button {
+text-decoration: none;
+color: #FFFFFF;
+}
+
+.custom-footer {
+    background-color: #4c3c3c;
+    color: #ffffff;
+}
+
+.btn-link {
+color: white;
+}
+
+.btn-link:hover {
+color: white;
+}

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load cart_tag %}
+{% load total_tag %}
+{% block title %}Cart{% endblock %}
+{% block content %}
+{% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% elif message.tags == 'error' %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+<h2 class="text-center mb-4">Shopping cart</h2>
+<h2 class="text mb-4">Items: {{request.session.cart|length}}</h2>
+<div>
+    {% if request.session.cart.items %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key, value in request.session.cart.items %}
+            <tr>
+                <td class="align-middle">{{ value.title }}</td>
+                <td id="price-{{ value.product_id }}" class="align-middle">${{ value.price }}</td>
+                <td id="quantity-{{ value.product_id }}" class="align-middle">{{ value.quantity }}</td>
+                <td id="total-{{ value.product_id }}" class="align-middle">${{ value.price|multiply:value.quantity|floatformat:2 }}</td>
+                <td>
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        {% if value.quantity > 1 %}
+                        <a id="decrement-{{ value.product_id }}" class="btn btn-outline-warning btn-sm" href="javascript:void(0)" onclick="decrementItem({{ value.product_id }}, '{% url 'item_decrement' id=value.product_id %}')">-</a>
+                        {% else %}
+                        <a id="decrement-{{ value.product_id }}" style="display:none;" class="btn btn-outline-warning btn-sm" href="javascript:void(0)" onclick="decrementItem({{ value.product_id }}, '{% url 'item_decrement' id=value.product_id %}')">-</a>
+                        {% endif %}
+                        <a id="increment-{{ value.product_id }}" class="btn btn-outline-warning btn-sm" href="javascript:void(0)" onclick="incrementItem({{ value.product_id }}, '{% url 'item_increment' id=value.product_id %}')">+</a>
+                    </div>
+                    <a class="btn btn-outline-danger btn-sm" href="{% url 'item_clear' id=value.product_id %}">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h3 id="total-order-price">Total order price: ${{ request.session.cart|total_price }}</h3>
+    <a class="btn btn-danger" href="{% url 'cart_clear' %}">Clear cart</a>
+    <form method="POST" action="{% url 'cart_detail' %}">
+        {% csrf_token %}
+        {{ user_address_form.as_p }}
+        <button class="btn btn-primary" type="submit">Create Order</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

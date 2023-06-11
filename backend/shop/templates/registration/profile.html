@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ object.username }} profile{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/registration/profile.css' %}">
+<div class="text-center">
+  <h2 class="mt-3 mb-4">{{ object.username }}</h2>
+  <p class="font-weight-bold">{{ object.email }}</p>
+</div>
+{% endblock %}
